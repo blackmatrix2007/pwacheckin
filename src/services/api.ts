@@ -1,40 +1,33 @@
 import { CheckIn } from '@/types/checkIn';
 
-// Base URL for the API
-const API_BASE_URL = '/api';
+// Storage key for check-ins
+const STORAGE_KEY = 'pwa_checkins';
 
 /**
- * Sends a check-in to the API
+ * Sends a check-in to the "API" (localStorage in this case for GitHub Pages)
  */
 export const sendCheckIn = async (checkIn: CheckIn): Promise<CheckIn> => {
   try {
-    // Add artificial delay to simulate network latency (remove in production)
-    if (process.env.NODE_ENV !== 'production') {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate occasional network failures in development (10% chance)
-      if (Math.random() < 0.1) {
-        throw new Error('Network error');
-      }
+    // Add artificial delay to simulate network latency
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Simulate occasional network failures (10% chance)
+    if (Math.random() < 0.1) {
+      throw new Error('Network error');
     }
     
-    const response = await fetch(`${API_BASE_URL}/checkin`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(checkIn),
-    });
+    // Get existing check-ins from localStorage
+    const existingCheckIns = getCheckInsFromStorage();
     
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to send check-in');
-    }
+    // Add the new check-in with synced status
+    const syncedCheckIn = { ...checkIn, synced: true };
     
-    const data = await response.json();
-    console.log('API: Check-in sent successfully', data.checkIn);
+    // Save to localStorage
+    saveCheckInsToStorage([syncedCheckIn, ...existingCheckIns]);
     
-    return data.checkIn;
+    console.log('API: Check-in saved successfully', syncedCheckIn);
+    
+    return syncedCheckIn;
   } catch (error) {
     console.error('API error:', error);
     throw error;
@@ -42,31 +35,56 @@ export const sendCheckIn = async (checkIn: CheckIn): Promise<CheckIn> => {
 };
 
 /**
- * Fetches check-ins from the API
+ * Fetches check-ins from the "API" (localStorage in this case for GitHub Pages)
  */
 export const fetchCheckIns = async (): Promise<CheckIn[]> => {
   try {
-    // Add artificial delay to simulate network latency (remove in production)
-    if (process.env.NODE_ENV !== 'production') {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate occasional network failures in development (10% chance)
-      if (Math.random() < 0.1) {
-        throw new Error('Network error');
-      }
+    // Add artificial delay to simulate network latency
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Simulate occasional network failures (10% chance)
+    if (Math.random() < 0.1) {
+      throw new Error('Network error');
     }
     
-    const response = await fetch(`${API_BASE_URL}/checkin`);
+    // Get check-ins from localStorage
+    const checkIns = getCheckInsFromStorage();
     
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch check-ins');
-    }
-    
-    const data = await response.json();
-    return data.checkIns;
+    return checkIns;
   } catch (error) {
     console.error('API error:', error);
     throw error;
+  }
+};
+
+/**
+ * Helper function to get check-ins from localStorage
+ */
+const getCheckInsFromStorage = (): CheckIn[] => {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+  
+  try {
+    const storedCheckIns = localStorage.getItem(STORAGE_KEY);
+    return storedCheckIns ? JSON.parse(storedCheckIns) : [];
+  } catch (error) {
+    console.error('Error reading from localStorage:', error);
+    return [];
+  }
+};
+
+/**
+ * Helper function to save check-ins to localStorage
+ */
+const saveCheckInsToStorage = (checkIns: CheckIn[]): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(checkIns));
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
   }
 };

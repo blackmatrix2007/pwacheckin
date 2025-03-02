@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PWA Check-in App",
   description: "A Progressive Web App with offline functionality and API calling capabilities",
-  manifest: "/manifest.json",
+  manifest: "./manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -44,8 +44,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="PWA Check-in" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="icon" href="/next.svg" />
-        <link rel="apple-touch-icon" href="/next.svg" />
+        <link rel="icon" href="./next.svg" />
+        <link rel="apple-touch-icon" href="./next.svg" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

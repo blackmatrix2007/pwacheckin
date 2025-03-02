@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PWA Check-in App
+
+A Progressive Web App (PWA) built with Next.js that provides check-in functionality with offline support and API integration.
+
+## Features
+
+- **Progressive Web App**: Works offline and can be installed on mobile devices
+- **Check-in Functionality**: Record your location with timestamps
+- **Offline Support**: Continue using the app even without an internet connection
+- **Data Synchronization**: Automatically syncs data when back online
+- **Responsive Design**: Works on desktop and mobile devices
+
+## Technologies Used
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- next-pwa (for PWA capabilities)
+- GitHub Pages (for hosting)
 
 ## Getting Started
 
-First, run the development server:
+### Development
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/pwacheckin.git
+   cd pwacheckin
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Production Build
+
+To create a production build:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The static files will be generated in the `out` directory.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment to GitHub Pages
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project is configured to automatically deploy to GitHub Pages using GitHub Actions. When you push changes to the `main` branch, the GitHub Actions workflow will:
 
-## Learn More
+1. Build the Next.js app
+2. Deploy the static files to the `gh-pages` branch
+3. Make the app available at `https://yourusername.github.io/pwacheckin/`
 
-To learn more about Next.js, take a look at the following resources:
+### Manual Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If you prefer to deploy manually:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Build the app:
+   ```bash
+   npm run build
+   ```
 
-## Deploy on Vercel
+2. Push the `out` directory to the `gh-pages` branch:
+   ```bash
+   git add out/ -f
+   git commit -m "Deploy to GitHub Pages"
+   git subtree push --prefix out origin gh-pages
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app/`: Next.js app directory
+- `src/app/page.tsx`: Main page component
+- `src/app/layout.tsx`: Root layout component
+- `src/services/`: API and service functions
+- `src/types/`: TypeScript type definitions
+- `src/utils/`: Utility functions
+- `public/`: Static assets and PWA files
+- `.github/workflows/`: GitHub Actions workflow files
+
+## License
+
+MIT

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { CheckIn } from '@/types/checkIn';
 import { sendCheckIn } from '@/services/api';
 
@@ -10,6 +10,48 @@ export default function Home() {
   const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState('');
+
+  // Function to sync a single check-in with the API
+  const syncCheckInWithApi = async (checkIn: CheckIn): Promise<CheckIn> => {
+    try {
+      const syncedCheckIn = await sendCheckIn(checkIn);
+      return syncedCheckIn;
+    } catch (error) {
+      console.error('API error:', error);
+      throw error;
+    }
+  };
+
+  // Function to sync all unsynced check-ins
+  const syncCheckIns = useCallback(async () => {
+    if (!isOnline) return;
+
+    const unsyncedCheckIns = checkIns.filter(checkIn => !checkIn.synced);
+    if (unsyncedCheckIns.length === 0) return;
+
+    setSyncStatus(`Syncing ${unsyncedCheckIns.length} check-ins...`);
+
+    for (const checkIn of unsyncedCheckIns) {
+      try {
+        const syncedCheckIn = await syncCheckInWithApi(checkIn);
+        
+        // Mark as synced
+        setCheckIns(prevCheckIns => 
+          prevCheckIns.map(c => 
+            c.id === checkIn.id ? syncedCheckIn : c
+          )
+        );
+        
+        setSyncStatus(`Synced ${checkIn.location}`);
+      } catch (error) {
+        console.error('Failed to sync check-in:', error);
+        setSyncStatus(`Failed to sync some check-ins`);
+      }
+    }
+
+    // Clear status after a delay
+    setTimeout(() => setSyncStatus(''), 3000);
+  }, [checkIns, isOnline, setSyncStatus]);
 
   // Check online status
   useEffect(() => {
@@ -40,7 +82,7 @@ export default function Home() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [syncCheckIns]);
 
   // Save check-ins to local storage whenever they change
   useEffect(() => {
@@ -69,69 +111,30 @@ export default function Home() {
     // Add to local state
     setCheckIns(prevCheckIns => [newCheckIn, ...prevCheckIns]);
     
-    // Try to sync with API if online
-    if (isOnline) {
-      try {
-        const syncedCheckIn = await syncCheckInWithApi(newCheckIn);
-        
-        // Mark as synced if successful
-        setCheckIns(prevCheckIns => 
-          prevCheckIns.map(checkIn => 
-            checkIn.id === newCheckIn.id 
-              ? { ...syncedCheckIn } 
-              : checkIn
-          )
-        );
-      } catch (error) {
-        console.error('Failed to sync check-in:', error);
-      }
+    // Try to sync with API
+    try {
+      const syncedCheckIn = await syncCheckInWithApi(newCheckIn);
+      
+      // Mark as synced if successful
+      setCheckIns(prevCheckIns => 
+        prevCheckIns.map(checkIn => 
+          checkIn.id === newCheckIn.id 
+            ? { ...syncedCheckIn } 
+            : checkIn
+        )
+      );
+    } catch (error) {
+      console.error('Failed to sync check-in:', error);
+      setSyncStatus('Failed to sync check-in. Will retry when online.');
+      
+      // Clear status after a delay
+      setTimeout(() => setSyncStatus(''), 3000);
     }
 
     setLocation('');
     setIsLoading(false);
   };
 
-  // Function to sync a single check-in with the API
-  const syncCheckInWithApi = async (checkIn: CheckIn): Promise<CheckIn> => {
-    try {
-      const syncedCheckIn = await sendCheckIn(checkIn);
-      return syncedCheckIn;
-    } catch (error) {
-      console.error('API error:', error);
-      throw error;
-    }
-  };
-
-  // Function to sync all unsynced check-ins
-  const syncCheckIns = async () => {
-    if (!isOnline) return;
-
-    const unsyncedCheckIns = checkIns.filter(checkIn => !checkIn.synced);
-    if (unsyncedCheckIns.length === 0) return;
-
-    setSyncStatus(`Syncing ${unsyncedCheckIns.length} check-ins...`);
-
-    for (const checkIn of unsyncedCheckIns) {
-      try {
-        const syncedCheckIn = await syncCheckInWithApi(checkIn);
-        
-        // Mark as synced
-        setCheckIns(prevCheckIns => 
-          prevCheckIns.map(c => 
-            c.id === checkIn.id ? syncedCheckIn : c
-          )
-        );
-        
-        setSyncStatus(`Synced ${checkIn.location}`);
-      } catch (error) {
-        console.error('Failed to sync check-in:', error);
-        setSyncStatus(`Failed to sync some check-ins`);
-      }
-    }
-
-    // Clear status after a delay
-    setTimeout(() => setSyncStatus(''), 3000);
-  };
 
   // Format date for display
   const formatDate = (timestamp: number) => {

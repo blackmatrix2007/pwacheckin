@@ -1,8 +1,20 @@
 import withPWA from 'next-pwa';
 import { NextConfig } from 'next';
 
+// Get the repository name from package.json or environment variable
+const REPO_NAME = 'pwacheckin';
+const isProd = process.env.NODE_ENV === 'production';
+
 const config: NextConfig = {
   reactStrictMode: true,
+  output: 'export', // Enable static exports
+  distDir: 'out',
+  // Configure basePath and assetPrefix for GitHub Pages
+  basePath: isProd ? `/${REPO_NAME}` : '',
+  assetPrefix: isProd ? `/${REPO_NAME}/` : '',
+  images: {
+    unoptimized: true, // Required for static export
+  },
 };
 
 const nextConfig = withPWA({

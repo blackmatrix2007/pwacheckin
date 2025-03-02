@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CheckIn } from '@/types/checkIn';
 
+// This is required for static export
+export const dynamic = 'force-static';
+
 // Mock database
-let checkIns: CheckIn[] = [];
+const checkIns: CheckIn[] = [];
 
 export async function POST(request: NextRequest) {
   try {
